@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from database.db_config import Base, engine
+import database.models
 
 # ── All routers ───────────────────────────────────────────────────
 from routes.auth_routes       import router as auth_router
@@ -42,6 +44,11 @@ app.include_router(email_router,      tags=["Email"])
 app.include_router(tips_router,       tags=["Tips"])
 app.include_router(sample_router,     tags=["Sample"])
 app.include_router(admin_router,      tags=["Admin"])
+
+
+@app.on_event("startup")
+def ensure_tables_exist():
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/", tags=["Root"])

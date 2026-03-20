@@ -1,12 +1,17 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env", override=True)
+load_dotenv(override=True)
+
+DEFAULT_SQLITE_URL = f"sqlite:///{(BASE_DIR / 'business_ai.db').as_posix()}"
 
 # ── Database ──────────────────────────────────────────────────────
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:yourpassword@localhost:5432/business_ai_db"
+    DEFAULT_SQLITE_URL
 )
 
 # ── App ───────────────────────────────────────────────────────────

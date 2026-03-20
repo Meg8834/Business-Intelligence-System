@@ -1,49 +1,47 @@
-import { useEffect, useState } from "react";
-import API from "./services/api";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import Simulation from './pages/Simulation'
+import AdminPanel from './pages/AdminPanel'
 
-function App() {
-
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    API.get("/business-data")
-      .then((response) => {
-        console.log(response.data);
-        setData(response.data);
-      })
-      .catch((error) => console.error(error));
-  }, []);
-
-  return (
-    <div>
-      <h1>Business Decision Intelligence System</h1>
-
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>Revenue</th>
-            <th>Expenses</th>
-            <th>Marketing</th>
-            <th>Customer Growth</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((row) => (
-            <tr key={row.id}>
-              <td>{row.month}</td>
-              <td>{row.revenue}</td>
-              <td>{row.expenses}</td>
-              <td>{row.marketing_spend}</td>
-              <td>{row.customer_growth}</td>
-            </tr>
-          ))}
-        </tbody>
-
-      </table>
-    </div>
-  );
+// ── Protected route wrapper ───────────────────────────────────────
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token')
+  return token ? children : <Navigate to="/login" replace />
 }
 
-export default App;
+// ── Admin route wrapper ───────────────────────────────────────────
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem('token')
+  const user  = JSON.parse(localStorage.getItem('user') || '{}')
+  if (!token) return <Navigate to="/login" replace />
+  if (!user.is_admin) return <Navigate to="/dashboard" replace />
+  return children
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="colored"
+      />
+      <Routes>
+        <Route path="/"          element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login"     element={<Login />} />
+        <Route path="/register"  element={<Register />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/simulation" element={<ProtectedRoute><Simulation /></ProtectedRoute>} />
+        <Route path="/admin"     element={<AdminRoute><AdminPanel /></AdminRoute>} />
+      </Routes>
+    </BrowserRouter>
+  )
+}

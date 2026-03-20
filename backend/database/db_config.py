@@ -2,12 +2,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from config import DATABASE_URL
 
+engine_kwargs = {
+    "echo": False,
+    "pool_pre_ping": True,
+}
+
+if DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
 # ── Engine ────────────────────────────────────────────────────────
-engine = create_engine(
-    DATABASE_URL,
-    echo=False,          # Set True to see SQL logs in terminal (debug mode)
-    pool_pre_ping=True,  # Checks connection health before using from pool
-)
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 # ── Session ───────────────────────────────────────────────────────
 SessionLocal = sessionmaker(
